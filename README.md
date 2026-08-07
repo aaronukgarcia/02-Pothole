@@ -1,147 +1,52 @@
-# PotholeWatch
+# PotholeWatch: An Open Data Commons for Road-Surface Health
 
-**Open-Source Road Surface Monitoring Pilot**
+*A concept paper*
 
-A crowdsourced road surface monitoring system using Firebase, designed as a proof-of-concept for UK local councils.
+## What is PotholeWatch?
 
-> ⚠️ **Pilot Phase Only** — This is a technical feasibility study, not a production-ready system.
+PotholeWatch proposes an open data commons for road-surface condition: a neutral pool where any device — a fleet vehicle's telematics, a phone running a detection app, a citizen with a web form — can contribute a tiny anonymous defect report, and where the aggregated clusters are published under an open licence that any council, researcher, or routing app can use.
 
-## Overview
+The report model is deliberately minimal: a timestamp, a WGS84 location, a source class, an optional bump intensity. Roughly 120 bytes. No names, no number plates, no images required.
 
-PotholeWatch explores the technical feasibility of crowdsourced road surface monitoring. It provides a web form for citizens to report road defects with GPS coordinates, automatic clustering of nearby reports, and a read-only API for council GIS integration.
+## Why it doesn't already exist
 
-### What This Is
+Every layer of this idea exists in some closed, static, or single-jurisdiction form — and the paper surveys them honestly:
 
-- A technical proof-of-concept for one local council pilot
-- A demonstration of Firebase geospatial capabilities
-- An exploration of data collection workflows
-- A starting point for community discussion
+- **FixMyStreet / Open311** — citizen reporting, human-only, per-jurisdiction
+- **Pothole Patrol (2008), Nericell (2008), Mednis (2011)** — proved phones and vehicles detect defects; study-bounded datasets
+- **Street Bump (Boston, 2011)** — the canonical equity-bias warning every crowdsourced system inherits
+- **Waymo + Waze (April 2026)** — machine-detected potholes fed to cities, in closed, single-fleet form
+- **OpenStreetMap surface tags** — open but static; no defect events, no freshness
 
-### What This Is NOT
+No system combines machine ingestion from any source, defect-level events with freshness, open licensing, and cross-jurisdiction scope. That combination is the proposal.
 
-- A production-ready system
-- A replacement for existing municipal asset management systems
-- A guarantee of OEM cooperation or data access
+## What the paper does and doesn't claim
 
-## Tech Stack
+This is a concept paper, not a specification, and nothing in it is built. The hard problems are stated as open questions with candidate approaches, tagged as hypotheses:
 
-| Component | Technology |
-|-----------|------------|
-| Database | Firebase Firestore (GeoHash for clustering) |
-| Compute | Cloud Functions (Node.js) |
-| Storage | Cloud Storage (images, max 5MB) |
-| Email | SendGrid (transactional) |
+- **Trust versus privacy** — the central tension: device accountability creates linkable movement trails; candidate mitigations (Privacy Pass-style rotating credentials, aggregate-only publication) are untested
+- **Equity** — refuse-collection fleets visit every street regardless of neighbourhood income; whether that defeats the Street Bump bias is an empirical question
+- **Cold start and funding** — unsolved; the adoption path argued is institutional (procurement data-sharing clauses), not volunteer
 
-## Features
+## The proposed first test
 
-- GPS-enabled location capture via map picker or device
-- Optional photo upload (max 5MB)
-- Automatic clustering of reports within 10m radius
-- Email confirmation with reference number
-- Read-only GeoJSON API for council integration
-- reCAPTCHA v3 spam prevention
+One borough, one refuse fleet: accelerometer loggers on a council's own bin lorries, open defect clusters for one collection area, ground-truthed against the council's inspections for one season — with defined success criteria and a go/no-go decision at the end.
 
-## API Endpoints
+## Documentation
 
-### POST /v1/reports
-Submit a new pothole report.
-- Authentication: reCAPTCHA v3
-- Rate limit: 10 requests/hour per IP
+See [`PotholeWatch_v11.0.pdf`](PotholeWatch_v11.0.pdf) for the full concept paper.
 
-### GET /v1/potholes
-Retrieve pothole data (council access only).
-- Authentication: API key
-- Response: GeoJSON FeatureCollection
-- Filters: Bounding box, date range, status
+*Note: this v11 concept paper replaces the earlier v8 technical white paper, which was withdrawn for overstating the maturity of unbuilt components.*
 
-## Installation
+## Call for Contributors
 
-```bash
-# Clone the repository
-git clone https://github.com/aaronukgarcia/02-Pothole.git
-cd 02-Pothole
-
-# Install dependencies
-npm install
-
-# Configure Firebase
-firebase login
-firebase init
-
-# Deploy
-firebase deploy
-```
-
-## Configuration
-
-Create a `.env` file with the following variables:
-
-```env
-FIREBASE_PROJECT_ID=your-project-id
-SENDGRID_API_KEY=your-sendgrid-key
-RECAPTCHA_SECRET=your-recaptcha-secret
-```
-
-## Data Model
-
-### Report Document
-```json
-{
-  "id": "UUID",
-  "timestamp": "ISO 8601 UTC",
-  "location": "GeoPoint",
-  "userEmail": "encrypted",
-  "photoUrl": "Cloud Storage path",
-  "intensity": "float (0-10)"
-}
-```
-
-## Known Limitations
-
-- **No native geospatial joins** — Uses GeoHash workaround
-- **Cold start latency** — 1-3 seconds on first request
-- **Firebase vendor lock-in** — No migration path specified
-- **GDPR compliance** — Requires legal review and DPIA completion
-
-## Contributing
-
-Contributions are welcome. Please read the feasibility study document for context on scope and limitations before submitting PRs.
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/improvement`)
-3. Commit your changes (`git commit -am 'Add improvement'`)
-4. Push to the branch (`git push origin feature/improvement`)
-5. Open a Pull Request
+The concept needs adversaries before it needs code: geospatial and distributed-systems engineers, privacy engineers, council asset-management practitioners, fleet operators, and open-data governance specialists.
 
 ## License
 
-MIT License
-
-Copyright (c) 2025 PotholeWatch Contributors
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+MIT License — see [LICENSE](LICENSE). The proposed commons dataset itself would use an ODbL-style open database licence.
 
 ## Contact
 
-- **Email:** aaron@garcia.ltd
-- **GitHub:** [aaronukgarcia/02-Pothole](https://github.com/aaronukgarcia/02-Pothole)
-
----
-
-*Honest Assessment. Realistic Scope. Clear Exit Plan.*
+Aaron Garcia
+aaron@garcia.ltd
